@@ -9,5 +9,5 @@ import com.banzo.poi.entities.University;
 public interface UniversityRepository extends JpaRepository<University, Long> {
 
     University findByName(String name);
-    
+
 }
