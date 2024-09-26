@@ -1,4 +1,4 @@
-package com.banzo.poi.poi;
+package com.banzo.poi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
