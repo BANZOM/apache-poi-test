@@ -26,8 +26,7 @@ public class University {
     public University() {
     }
 
-    public University(Long id, String name, String address, String phone) {
-        this.id = id;
+    public University(String name, String address, String phone) {
         this.name = name;
         this.address = address;
         this.phone = phone;
@@ -65,4 +64,7 @@ public class University {
         this.phone = phone;
     }
 
+    public String toString() {
+        return "University [id=" + id + ", name=" + name + ", address=" + address + ", phone=" + phone + "]";
+    }
 }

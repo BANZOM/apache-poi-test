@@ -30,8 +30,7 @@ public class Student {
     public Student() {
     }
 
-    public Student(Long id, String name, String email, String phone, University university) {
-        this.id = id;
+    public Student(String name, String email, String phone, University university) {
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -76,6 +75,11 @@ public class Student {
 
     public void setUniversity(University university) {
         this.university = university;
+    }
+
+    public String toString() {
+        return "Student [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", university="
+                + university + "]";
     }
 
 }
