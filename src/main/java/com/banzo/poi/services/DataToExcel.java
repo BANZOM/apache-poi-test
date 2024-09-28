@@ -61,6 +61,11 @@ public class DataToExcel {
                 rowNum++;
             }
 
+            // auto size columns
+            for (int i = 0; i < HEADERS.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
 
             wb.write(out);
 

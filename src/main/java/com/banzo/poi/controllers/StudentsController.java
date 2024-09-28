@@ -82,6 +82,6 @@ public class StudentsController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Something went wrong");
-        }
+        } 
     }
 }
