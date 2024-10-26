@@ -20,7 +20,7 @@ import com.banzo.poi.services.DataToExcel;
 import com.banzo.poi.services.ExcelUploadService;
 
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/api/students")
 public class StudentsController {
 
     @Autowired
@@ -83,5 +83,10 @@ public class StudentsController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Something went wrong");
         } 
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<String> syncStudents() {
+        return ResponseEntity.ok("Students synchronized successfully");
     }
 }
