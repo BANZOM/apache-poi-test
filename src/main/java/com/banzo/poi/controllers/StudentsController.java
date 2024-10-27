@@ -34,7 +34,7 @@ public class StudentsController {
     @Autowired
     private ExcelUploadService excelUploadService;
 
-    @GetMapping("/excel")
+    @GetMapping("/download")
     public ResponseEntity<?> getStudents() {
         String fileName = "students.xlsx";
         ByteArrayInputStream excelData = dataToExcel.studentsToExcel();
