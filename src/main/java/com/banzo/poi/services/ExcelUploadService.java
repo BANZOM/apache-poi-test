@@ -12,8 +12,9 @@ public class ExcelUploadService {
     @Autowired
     private ExcelUploadsRepository excelUploadsRepository;
 
-    public ExcelUploads upload(byte[] file) {
-        return excelUploadsRepository.save(new ExcelUploads(file));
+    public boolean upload(byte[] file) throws Exception {
+        excelUploadsRepository.save(new ExcelUploads(file));
+        return true;
     }
 
 }

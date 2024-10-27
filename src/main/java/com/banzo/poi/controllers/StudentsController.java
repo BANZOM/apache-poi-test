@@ -2,18 +2,21 @@ package com.banzo.poi.controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.banzo.poi.entities.ExcelUploads;
 import com.banzo.poi.services.DataToExcel;
@@ -23,13 +26,15 @@ import com.banzo.poi.services.ExcelUploadService;
 @RequestMapping("/api/students")
 public class StudentsController {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentsController.class);
+
     @Autowired
     private DataToExcel dataToExcel;
 
     @Autowired
     private ExcelUploadService excelUploadService;
 
-    @RequestMapping("/excel")
+    @GetMapping("/excel")
     public ResponseEntity<?> getStudents() {
         String fileName = "students.xlsx";
         ByteArrayInputStream excelData = dataToExcel.studentsToExcel();
@@ -49,40 +54,47 @@ public class StudentsController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadStudents(RequestEntity<byte[]> requestEntity) {
+    public ResponseEntity<String> uploadStudents(@RequestParam(value = "file", required = false) MultipartFile file) {
 
-        HttpHeaders headers = requestEntity.getHeaders();
-        List<String> contentType = headers.get("Content-Type");
+        logger.info("Received file: " + file.getContentType());
 
-        if (contentType == null || contentType.isEmpty()
-                || !contentType.get(0).trim().equals("application/vnd.ms-excel;charset=UTF-8")
-                        && !contentType.get(0).trim().equals(
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8")) {
-            return ResponseEntity.badRequest().body("Invalid content type. Only Excel files are allowed.");
+        if (null == file || file.isEmpty()) {
+            logger.warn("File is empty or null.");
+            return ResponseEntity.badRequest().body("No file uploaded. File is empty or null.");
         }
 
-        byte[] file = requestEntity.getBody();
+        String fileName = file.getOriginalFilename();
+        logger.info("File name: '" + fileName + "'");
 
-        if (file == null || file.length == 0) {
-            return ResponseEntity.badRequest().body("No file uploaded");
+        if (fileName == null || !fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+            logger.info("Provided file is not an Excel file.");
+            return ResponseEntity.badRequest().body("Invalid file. Only Excel files are allowed.");
         }
 
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(file)) {
-            // it'll throw an exception if the file is not a valid Excel file
-            WorkbookFactory.create(bis);
-
-            ExcelUploads excel = excelUploadService.upload(file);
-
-            return ResponseEntity.ok("File uploaded successfully with id: " + excel.getId() + "; Upload timestamp: "
-                    + excel.getUploadtTime());
+        try {
+            byte[] excel = file.getBytes();
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(excel)) {
+                // it'll throw an exception if the file is not a valid Excel file
+                WorkbookFactory.create(bis);
+                boolean isUploaded = excelUploadService.upload(excel);
+                if (isUploaded) {
+                    logger.info(fileName + " uploaded successfully.");
+                    return ResponseEntity.ok("File uploaded successfully");
+                } else {
+                    logger.error("Error uploading the file.");
+                    return ResponseEntity.status(500).body("Error uploading the file");
+                }
+            }
         } catch (IOException e) {
+            logger.error("Error reading the Excel file or the file is not a valid Excel file.");
             return ResponseEntity.status(500)
                     .body("Error reading the Excel file or the file is not a valid Excel file.");
 
         } catch (Exception e) {
+            logger.error("Something went wrong.");
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Something went wrong");
-        } 
+        }
     }
 
     @PostMapping("/sync")
